@@ -21,7 +21,7 @@ class WebSecurityConfig extends DrupalAwareWebSecurityConfiguration {
 }
 ```
 
-Settings:
+The file `application.properties` could look like that:
 ```properties
 drupal.major-version=8
 drupal.cookie-name-pattern=SESS.*
