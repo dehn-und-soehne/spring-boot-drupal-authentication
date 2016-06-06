@@ -3,6 +3,7 @@ package de.dehn.drupal.filter
 import de.dehn.drupal.userdetails.DrupalUser
 import de.dehn.drupal.authentication.preauth.DrupalAuthenticationCookiePrincipal
 import de.dehn.drupal.util.CryptUtils
+import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter
 
@@ -10,6 +11,7 @@ import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import javax.sql.DataSource
+import java.sql.SQLException
 
 /**
  * Use Drupal cookies for authentication.
@@ -17,6 +19,8 @@ import javax.sql.DataSource
  * @author Stephan Grundner
  */
 class DrupalPreAuthenticationFilter extends AbstractPreAuthenticatedProcessingFilter {
+
+    private static final log = LoggerFactory.getLogger(DrupalPreAuthenticationFilter)
 
     static final PRINCIPAL_ATTRIBUTE_NAME = DrupalPreAuthenticationFilter.name + '#principal'
 
@@ -91,7 +95,7 @@ class DrupalPreAuthenticationFilter extends AbstractPreAuthenticatedProcessingFi
     }
 
     /**
-     * Checks each cookie candiate if it matches with an entry in the drupal database.
+     * Checks each cookie candidate if it matches with an entry in the drupal database.
      *
      * @param request
      * @return An authenticated principal or null
@@ -127,10 +131,18 @@ where s.sid = ? or s.sid = ?
 
     @Override
     protected Object getPreAuthenticatedPrincipal(HttpServletRequest request) {
-        def session = request.getSession(false)
-        def principal = session?.getAttribute(PRINCIPAL_ATTRIBUTE_NAME)
-        if (principal == null) {
-            principal = findDrupalPrincipal(request)
+        DrupalAuthenticationCookiePrincipal principal = null
+
+        try {
+            def session = request.getSession(false)
+            principal = session?.getAttribute(PRINCIPAL_ATTRIBUTE_NAME)
+            if (principal == null) {
+                principal = findDrupalPrincipal(request)
+            }
+        } catch (SQLException e) {
+            log.warn("Unable to access drupal database", e)
+        } catch (Exception e) {
+            log.warn("Unable find drupal principal", e)
         }
 
         principal

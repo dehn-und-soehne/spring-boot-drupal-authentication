@@ -64,9 +64,9 @@ uploadArchives {
             }
 
             pom.project {
-                name 'Spring Boot Drupal authentication'
+                name 'DEHN+SÖHNE Spring Boot Drupal authentication'
                 packaging 'jar'
-                description 'Supports authentication with Spring Security against Drupal'
+                description 'Support for authentication with Spring Security against Drupal'
                 url 'https://github.com/dehn-und-soehne/spring-boot-drupal-authentication'
 
                 scm {
